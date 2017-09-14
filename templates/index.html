@@ -1,0 +1,77 @@
+<html>
+
+<head>
+  <script type="text/javascript" src='http://code.jquery.com/jquery-1.10.2.min.js'></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+  <script src=" https://code.jquery.com/jquery-3.2.1.slim.min.js "></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js ">
+  </script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js">
+  </script>
+  <title>Email Validation</title>
+</head>
+
+<body>
+  <!-- {{ all_users }} -->
+  <div class="form-group container">
+
+    <!-- with all the data we can then construct a more structured output -->
+    <!-- {% if valid == True%}
+    <h5> The Email addresses you entered: {{email}} is valid </h5> {% for emails in all_emails: %}
+
+
+    <ul>
+      <li>Email {{ emails['email'] }}, : {{ emails['created_at'] }}</li>
+
+    </ul>
+
+    {% endfor %} {% endif %} {% if valid == False %} -->
+    <!-- <h5> The email address {{email}}</h5> {% endif %} {% with messages = get_flashed_messages() %} {% if messages %} -->
+    <!-- <ul class=flashes>
+      {% for message in messages %}
+      <br>
+      <h5>{{ message }} {{email}} </h5> {% endfor %}
+    </ul>
+    {% endif %} {% endwith %} {% block body %}{% endblock %} -->
+  </div>
+  <hr>
+  <div class="container-fluid row ">
+    <div id="sign-in" class="orm-group  col-md-4">
+      <h2> Sign in </h2>
+      <form action='/signin' method='POST'>
+        <label for="email">Email Address:<input required type="text" class="form-control control-label" name="email" id="email"></label>
+        <label for="password">Password:<input required type="password" class="form-control control-label" name="password" id="password"></label>
+        <input type="submit" class="btn btn-default" value="Submit">
+      </form>
+    </div>
+    <div id="sign-up" class=" form-group col-md-7">
+      <h2> Sign up </h2>
+      <form action='/signup' method='POST'>
+
+        <label for="first_name">First Name:<input required type="text" class="form-control control-label" name="first_name" id="first_name"></label>
+        <label for="email">Last Name:<input required type="text" class="form-control control-label" name="last_name" id="last_name"></label>
+        <label for="email">Email Address:<input  type="text" class="form-control control-label" name="email" id="email"></label><br>
+        <label for="password">Password:<input  type="password" class="form-control control-label" name="password" id="password"></label>
+        <label for="conf_password">Password Confirmation:<input  type="password" class="form-control control-label" name="conf_password" id="conf_pasword"></label>
+        <input type="submit" class="btn btn-default" value="Submit"> {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %}
+        <p class="text-danger" id="msg">{{message}}</p>
+        {% endfor %} {% endif %} {% endwith %}
+      </form>
+    </div>
+
+    <!-- <
+    <form action='/update_age' method='POST'>
+      <label for="user_id2">user_id:<input type="text" name="user_id2" id="user_id2"></label>
+      <label for="age2">Age:<input type="text" name="age2" id="age2"></label>
+      <input type="submit" value="Add">
+    </form>
+
+    <form action='/delete_users' method='POST'>
+      <label for="user_id">Delete id:<input type="text" name="user_id" id="user_id"></label>
+      <p> &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp (NOT Reversible)</p>
+      <input type="submit" value="Add">
+    </form> -->
+  </div>
+</body>
+
+</html>
