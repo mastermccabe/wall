@@ -22,14 +22,20 @@ app.secret_key = "ThisIsSecret!"
 
 @app.route('/')
 def index():
+    if 'loggedin' in session:
+        return redirect('/wall')
+    #     loggedin = session['loggedin']
+    else:
+    # else:
+    #     return redirect('/')
     # if not 'loggedin' in session:
     #     session['loggedin'] = False
     # else:
     #     session['loggedin'] = True
     #     return redirect('/')
-    session['loggedin'] = False
 
-    return render_template('index.html', loggedin=session['loggedin'])
+
+        return render_template('index.html')
 
 
 #
@@ -40,18 +46,23 @@ def signin():
 
 
     query = "SELECT * FROM users WHERE users.email = :email and users.password = :password"
+    get_id = "SELECT users.user_id FROM users WHERE users.email = :email and users.password = :password"
+
     data = {
             'email': request.form['email'],
             'password': md5.new(request.form['password']).hexdigest()
     }
     value = mysql.query_db(query, data)
+
+    # print user_id
     if len(value)==0:
         flash("Invalid email or password")
-        loggedin = False
+        session['loggedin'] = False
         return redirect('/')
     else:
-        session['user_info'] = value
+        session['user_id'] = mysql.query_db(get_id, data)[0]['user_id']
         session['loggedin'] = True
+        # session['loggedin'] = { True, user_id }
 
         return redirect('/wall')
   #   user = mysql.query_db(user_query, query_data)
@@ -65,32 +76,78 @@ def signin():
   #   else:
   # # invalid email!
 
-@app.route('/wall')
+@app.route('/wall', methods = ['GET','POST'])
 def wall():
-    if session['loggedin'] == True:
+    print session['loggedin']
+    print request.method
+    if session['loggedin'] == True or request.method == 'GET' or request.method == 'POST':
+        # and request.method =='POST'
+        query = "SELECT * FROM users WHERE users.user_id = :user_id"
 
-        info = session['user_info']
-    # first_name = session['first_name']
-    print info
-    # info = "SELECT * FROM users where"
-    # if not 'loggedin' in session:
-    #     session['loggedin'] = False
-    # else:
-    #     session['loggedin'] = False
-    #     return redirect('/')
+        data = { 'user_id':session['user_id'] }
+        first_name = mysql.query_db(query, data)[0]['first_name']
 
-    # if loggedin == False:
-    #     return render_template('index.html', loggedin = loggedin)
-    # else:
 
-    return render_template('wall.html')
 
+
+        message = mysql.query_db("SELECT m.message_id, m.message, m.created_at, concat(first_name,' ', last_name) as user from messages m join users u where m.user_id = u.user_id ORDER BY message_id desc")
+
+        # comment = mysql.query_db("SELECT c.comment_id, u.user_id, c.message_id, c.comment, c.created_at, concat(first_name,' ', last_name) as user from comments c join users u where c.user_id=u.user_id order by comment_id desc")
+        comment = mysql.query_db("SELECT c.comment_id, c.message_id, c.comment, c.created_at, concat(first_name,' ', last_name) as user from comments c join users u where c.user_id = u.user_id ORDER BY comment_id asc")
+        # comment = mysql.query_db("SELECT comment, comments.created_at, CONCAT(users.first_name,' ', users.last_name) as user, message_id FROM comments JOIN users ON comments.user_id = users.user_id ORDER BY comments.created_at")
+        print ("******* message *********")
+        print message
+        print ("******* COMMENT *********")
+        print comment
+        user_id = session['user_id']
+        print user_id
+
+
+
+    else:
+        flash("not logged in")
+        return render_template('index.html', all_messages=message, all_comment=comment, loggedin=session['loggedin'])
+
+
+
+    return render_template('wall.html',all_messages=message, all_comments=comment, first_name=first_name, loggedin=session['loggedin'])
+
+
+@app.route('/wall/message', methods=['POST'])
+def messages():
+    user_id = session['user_id']
+    message_post = request.form['message_area']
+
+    query = "INSERT INTO messages (message, created_at, updated_at, user_id) values (:message, NOW(), NOW(), :user_id)"
+    query_data = { 'message': message_post, 'user_id':user_id}
+
+
+
+    user_id = mysql.query_db(query, query_data)
+    print user_id
+        # insert comment here
+    return redirect('/wall')
+
+@app.route('/wall/comment/<message_id>', methods=['POST'])
+def comment(message_id):
+    user_id = session['user_id']
+    print "MADE IT TO COMMENTS"
+    print  message_id
+    query = "INSERT INTO comments (comment, created_at, updated_at,message_id, user_id) VALUES (:comment, Now(), Now(), :message_id,:user_id)"
+    data = {
+        'comment': request.form['comment'],
+        'user_id': session['user_id'],
+        'message_id': message_id
+    }
+    comment_in = mysql.query_db(query, data)
+    print comment_in
+    return redirect('/wall')
 
 @app.route('/signout',methods= ['POST'])
 def sign_out():
     # button = request.form['button']
     # session['counter']=0
-    session.pop('loggedin')
+    session.pop('loggedin', None)
     return redirect('/')
 
 @app.route('/signup', methods=['POST'])
@@ -134,19 +191,20 @@ def create_user():
              'email': request.form['email']
            }
         value = mysql.query_db(query, data)
+
         if not len(value)==0:
             flash('You already have an acount, please try logging in')
             return redirect('/')
         else: insert_query = "INSERT INTO users (last_name, first_name, email, password, created_at, updated_at) VALUES (:last_name, :first_name ,:email, :password, NOW(), NOW())"
         query_data = { 'last_name': last_name,'first_name': first_name,  'email': email, 'password': password }
-        mysql.query_db(insert_query, query_data)
+        user_id = mysql.query_db(insert_query, query_data)
         flash("success!!")
+        session['user_id'] = user_id
         session['loggedin'] = True
-        session['user_info'] = query_data
-        session['first_name'] = first_name
+
         return redirect('/')
 
-    return render_template('index.html', first_name = session['first_name'], user_info=session['user_info'])
+    return render_template('index.html', user_info=session['loggedin'])
 
 
 # Say we wanted to update a specific record, we could create another page and add a form that would submit to the following route:

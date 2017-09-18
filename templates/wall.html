@@ -10,23 +10,60 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js">
   </script>
   <meta charset="utf-8">
-  <title>The Wall</title>
+  <title class="display-1">The Wall</title>
 </head>
 
 <body>
 
   <div id="wrapper" class="container-fluid">
     <div id="wall" class="container-fluid">
-      <p> welcome to the wall {{first_name}} {% for i in info %} {{ info }} {% endfor %} </p>
+      <div id="wal-header" class="d-flex justify-content-between">
+        <h3 class="pull-left col-md-6">The Wall</h3><span class="pull-right col-md-2"> <strong>{{first_name}}</strong> <form action= "/signout" method="post"><input class="btn btn-link" type="submit" name="logout" value="Logout"></form></span></div>
+      <!-- session['user_info']['first_name'] {% for info in session['user_info'] %} {{ info }} {% endfor %} </p> -->
       <hr>
-      <div class="form-group">
-        <label for="exampleTextarea"><h3> Post a message </h3></label>
-        <textarea class="form-control" id="message_area" rows="3"></textarea>
-        <input type="submit" class="btn btn-default" value="Submit">
+      <div name="lower-wall-container">
+        <div name="wall-post" class="form-group form-control">
+          <form action='/wall/message' method='POST'>
+            <label for="message_area"><h3> Post a message </h3></label>
+            <textarea class="form-control" id="message_area" name="message_area" rows="3"></textarea>
+            <br><input type="submit" class="btn btn-default" value="Submit">
+          </form </div>
+        </div>
+        <div id="message_body" class="form-group form-control">
+          <h2>Messages</h2>
+          <hr>{% for message in all_messages %}
+          <div class="message_box">
+            <h5>{{message['user']}}  {{message['created_at']}}</h5>
+            <p>{{message['message']}}</p>
+          </div>
+
+
+          {% for comment in all_comments %} {% if comment['message_id'] == message['message_id'] %}
+          <div class="form-group form-control">
+
+            <p>{{comment['user']}} -- {{comment['created_at']}}</p>
+            <p>{{comment['comment']}}</p>
+          </div>
+          {% endif %} {% endfor %}
+
+
+
+          <div name="wall-comment-container">
+            <form action="/wall/comment/{{message['message_id']}}" method="POST">
+              <label for="comment_area"><span> Post a comment </span></label>
+              <textarea class="form-control" id="comment_area" name="comment" rows="3"></textarea>
+              <br><input type="submit" class="btn btn-default" value="Submit">
+              <hr>
+            </form </div>
+            {% endfor %}
+          </div>
+
+
+        </div>
       </div>
     </div>
-  </div>
 
+  </div>
 
   </div>
 </body>
